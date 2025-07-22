@@ -5,6 +5,7 @@ import { Users2Icon, MessageSquareIcon, VideoIcon, UsersIcon, UserPlusIcon } fro
 import FriendCard from "../components/FriendCard";
 import NoFriendsFound from "../components/NoFriendsFound";
 import toast from "react-hot-toast";
+import Chatbot from "../components/chatBot";
 
 const HomePage = () => {
   const queryClient = useQueryClient();
@@ -210,6 +211,7 @@ const HomePage = () => {
           )}
         </section>
       </div>
+      <Chatbot />
     </div>
   );
 };
