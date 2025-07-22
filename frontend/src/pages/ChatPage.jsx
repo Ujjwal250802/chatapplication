@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import useAuthUser from "../hooks/useAuthUser";
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../lib/api";
@@ -17,7 +17,9 @@ import { StreamChat } from "stream-chat";
 import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
-import CallButton from "../components/CallButton";
+import { VideoIcon, ArrowLeftIcon, PhoneIcon } from "lucide-react";
+
+import "stream-chat-react/dist/css/v2/index.css";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -27,13 +29,14 @@ const ChatPage = () => {
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [targetUser, setTargetUser] = useState(null);
 
   const { authUser } = useAuthUser();
 
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
-    enabled: !!authUser, // this will run only when authUser is available
+    enabled: !!authUser,
   });
 
   useEffect(() => {
@@ -54,18 +57,20 @@ const ChatPage = () => {
           tokenData.token
         );
 
-        //
         const channelId = [authUser._id, targetUserId].sort().join("-");
-
-        // you and me
-        // if i start the chat => channelId: [myId, yourId]
-        // if you start the chat => channelId: [yourId, myId]  => [myId,yourId]
 
         const currChannel = client.channel("messaging", channelId, {
           members: [authUser._id, targetUserId],
         });
 
         await currChannel.watch();
+
+        // Get target user info from channel members
+        const members = Object.values(currChannel.state.members);
+        const targetMember = members.find(member => member.user.id !== authUser._id);
+        if (targetMember) {
+          setTargetUser(targetMember.user);
+        }
 
         setChatClient(client);
         setChannel(currChannel);
@@ -85,31 +90,69 @@ const ChatPage = () => {
       const callUrl = `${window.location.origin}/call/${channel.id}`;
 
       channel.sendMessage({
-        text: `I've started a video call. Join me here: ${callUrl}`,
+        text: `🎥 I've started a video call. Join me here: ${callUrl}`,
       });
 
-      toast.success("Video call link sent successfully!");
+      // Open the call in a new window/tab
+      window.open(callUrl, '_blank');
+      toast.success("Video call started!");
     }
   };
 
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-[93vh]">
-      <Chat client={chatClient}>
+    <div className="h-screen flex flex-col">
+      <Chat client={chatClient} theme="str-chat__theme-light">
         <Channel channel={channel}>
-          <div className="w-full relative">
-            <CallButton handleVideoCall={handleVideoCall} />
+          {/* Custom Header */}
+          <div className="bg-base-200 border-b border-base-300 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="btn btn-ghost btn-sm">
+                <ArrowLeftIcon className="size-4" />
+              </Link>
+              {targetUser && (
+                <>
+                  <div className="avatar size-10">
+                    <img 
+                      src={targetUser.image || targetUser.profilePic} 
+                      alt={targetUser.name || targetUser.fullName}
+                      className="rounded-full" 
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{targetUser.name || targetUser.fullName}</h3>
+                    <p className="text-xs text-success flex items-center gap-1">
+                      <span className="size-2 rounded-full bg-success inline-block" />
+                      Online
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleVideoCall} 
+                className="btn btn-success btn-sm text-white"
+                title="Start Video Call"
+              >
+                <VideoIcon className="size-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Chat Window */}
+          <div className="flex-1 flex flex-col">
             <Window>
-              <ChannelHeader />
               <MessageList />
               <MessageInput focus />
             </Window>
+            <Thread />
           </div>
-          <Thread />
         </Channel>
       </Chat>
     </div>
   );
 };
+
 export default ChatPage;

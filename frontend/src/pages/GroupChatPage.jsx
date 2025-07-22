@@ -19,6 +19,8 @@ import toast from "react-hot-toast";
 import ChatLoader from "../components/ChatLoader";
 import { VideoIcon, ArrowLeftIcon, Users2Icon } from "lucide-react";
 
+import "stream-chat-react/dist/css/v2/index.css";
+
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
 const GroupChatPage = () => {
@@ -91,6 +93,8 @@ const GroupChatPage = () => {
         text: `🎥 Group video call started! Join here: ${callUrl}`,
       });
 
+      // Open the call in a new window/tab
+      window.open(callUrl, '_blank');
       toast.success("Video call link sent to group!");
     }
   };
@@ -98,39 +102,46 @@ const GroupChatPage = () => {
   if (loading || !chatClient || !channel || !groupDetails) return <ChatLoader />;
 
   return (
-    <div className="h-[93vh]">
-      <Chat client={chatClient}>
+    <div className="h-screen flex flex-col">
+      <Chat client={chatClient} theme="str-chat__theme-light">
         <Channel channel={channel}>
-          <div className="w-full relative">
-            {/* Custom Header */}
-            <div className="p-3 border-b flex items-center justify-between max-w-7xl mx-auto w-full bg-base-200">
-              <div className="flex items-center gap-3">
-                <Link to="/groups" className="btn btn-ghost btn-sm">
-                  <ArrowLeftIcon className="size-4" />
-                </Link>
-                <div className="avatar size-10">
-                  <img src={groupDetails.groupPic} alt={groupDetails.name} className="rounded-full" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{groupDetails.name}</h3>
-                  <p className="text-xs text-base-content opacity-70 flex items-center gap-1">
-                    <Users2Icon className="size-3" />
-                    {groupDetails.members.length} members
-                  </p>
-                </div>
+          {/* Custom Header */}
+          <div className="bg-base-200 border-b border-base-300 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link to="/groups" className="btn btn-ghost btn-sm">
+                <ArrowLeftIcon className="size-4" />
+              </Link>
+              <div className="avatar size-10">
+                <img src={groupDetails.groupPic} alt={groupDetails.name} className="rounded-full" />
               </div>
-              <button onClick={handleVideoCall} className="btn btn-success btn-sm text-white">
+              <div>
+                <h3 className="font-semibold">{groupDetails.name}</h3>
+                <p className="text-xs text-base-content opacity-70 flex items-center gap-1">
+                  <Users2Icon className="size-3" />
+                  {groupDetails.members.length} members
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleVideoCall} 
+                className="btn btn-success btn-sm text-white"
+                title="Start Group Video Call"
+              >
                 <VideoIcon className="size-5" />
                 Start Call
               </button>
             </div>
+          </div>
 
+          {/* Chat Window */}
+          <div className="flex-1 flex flex-col">
             <Window>
               <MessageList />
               <MessageInput focus />
             </Window>
+            <Thread />
           </div>
-          <Thread />
         </Channel>
       </Chat>
     </div>

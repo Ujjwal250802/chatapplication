@@ -2,9 +2,13 @@ import { VideoIcon } from "lucide-react";
 
 function CallButton({ handleVideoCall }) {
   return (
-    <div className="p-3 border-b flex items-center justify-end max-w-7xl mx-auto w-full absolute top-0">
-      <button onClick={handleVideoCall} className="btn btn-success btn-sm text-white">
-        <VideoIcon className="size-6" />
+    <div className="absolute top-4 right-4 z-10">
+      <button 
+        onClick={handleVideoCall} 
+        className="btn btn-success btn-sm text-white shadow-lg"
+        title="Start Video Call"
+      >
+        <VideoIcon className="size-5" />
       </button>
     </div>
   );

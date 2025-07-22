@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Stream Chat Custom Styles */
+.str-chat__main-panel {
+  height: 100% !important;
+}
+
+.str-chat__channel {
+  height: 100% !important;
+}
+
+.str-chat__message-list {
+  height: 100% !important;
+  background: transparent !important;
+}
+
+.str-chat__message-input {
+  background: transparent !important;
+  border-top: 1px solid hsl(var(--bc) / 0.2) !important;
+}
+
+.str-chat__input {
+  background: hsl(var(--b1)) !important;
+  border: 1px solid hsl(var(--bc) / 0.2) !important;
+  color: hsl(var(--bc)) !important;
+}
+
+.str-chat__input:focus {
+  border-color: hsl(var(--p)) !important;
+  box-shadow: 0 0 0 1px hsl(var(--p)) !important;
+}
+
+.str-chat__message-simple__content {
+  background: hsl(var(--b2)) !important;
+  color: hsl(var(--bc)) !important;
+}
+
+.str-chat__message-simple--me .str-chat__message-simple__content {
+  background: hsl(var(--p)) !important;
+  color: hsl(var(--pc)) !important;
+}
+
 /* Chatbot Styles */
 #chat-icon {
   position: fixed;
