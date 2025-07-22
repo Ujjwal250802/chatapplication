@@ -4,13 +4,13 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
 
-import authRoutes from "./src/routes/auth.route.js";
-import userRoutes from "./src/routes/user.route.js";
-import chatRoutes from "./src/routes/chat.route.js";
-import chatbotRoutes from "./src/routes/chatbot.route.js"; 
-import groupRoutes from "./src/routes/group.route.js";
+import authRoutes from "./routes/auth.route.js";
+import userRoutes from "./routes/user.route.js";
+import chatRoutes from "./routes/chat.route.js";
+import chatbotRoutes from "./routes/chatbot.route.js"; 
+import groupRoutes from "./routes/group.route.js";
 
-import { connectDB } from "./src/lib/db.js";
+import { connectDB } from "./lib/db.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
