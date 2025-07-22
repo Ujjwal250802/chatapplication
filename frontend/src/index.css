@@ -21,26 +21,32 @@
 
 /* Custom message input styling */
 .str-chat__message-input-wrapper {
-  background: #f9fafb !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 9999px !important;
-  padding: 0.5rem 1rem !important;
+  background: #f3f4f6 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  margin: 0 !important;
 }
 
 .str-chat__input {
-  background: #f9fafb !important;
-  border: 1px solid #e5e7eb !important;
+  background: transparent !important;
+  border: none !important;
   color: #374151 !important;
-  border-radius: 9999px !important;
-  padding: 0.75rem 1rem !important;
+  border-radius: 12px !important;
+  padding: 0.5rem !important;
+  font-size: 14px !important;
 }
 
 .str-chat__input:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  border: none !important;
+  box-shadow: none !important;
   outline: none !important;
 }
 
+.str-chat__input::placeholder {
+  color: #9ca3af !important;
+  font-size: 14px !important;
+}
 .str-chat__message-simple__content {
   background: #ffffff !important;
   color: #374151 !important;
@@ -48,6 +54,7 @@
   border-radius: 12px !important;
   padding: 0.75rem 1rem !important;
   max-width: 70% !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
 }
 
 .str-chat__message-simple--me .str-chat__message-simple__content {
@@ -66,33 +73,7 @@
   background: #f9fafb !important;
 }
 
-/* Message input send button styling */
-.str-chat__send-button {
-  background: #3b82f6 !important;
-  border: none !important;
-  border-radius: 50% !important;
-  width: 2rem !important;
-  height: 2rem !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin-left: 0.5rem !important;
-}
-
-.str-chat__send-button:hover {
-  background: #2563eb !important;
-}
-
-/* Message list styling */
-.str-chat__message-list-scroll {
-  padding: 1rem !important;
-}
-
-.str-chat__message-simple {
-  margin-bottom: 1rem !important;
-}
-
-/* Empty state styling */
+/* Empty state custom styling */
 .str-chat__message-list--empty {
   display: flex !important;
   flex-direction: column !important;
@@ -100,6 +81,7 @@
   justify-content: center !important;
   height: 100% !important;
   color: #9ca3af !important;
+  background: #f9fafb !important;
 }
 
 .str-chat__message-list--empty::before {
@@ -111,8 +93,46 @@
 
 .str-chat__message-list--empty::after {
   content: "No chats here yet..." !important;
-  font-size: 1.125rem !important;
+  font-size: 1rem !important;
   color: #9ca3af !important;
+  font-weight: 400 !important;
+}
+/* Message input send button styling */
+.str-chat__send-button {
+  background: #6b7280 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 0.75rem !important;
+  transition: background-color 0.2s !important;
+}
+
+.str-chat__send-button:hover {
+  background: #4b5563 !important;
+}
+
+.str-chat__send-button svg {
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+}
+/* Message list styling */
+.str-chat__message-list-scroll {
+  padding: 1rem !important;
+}
+
+.str-chat__message-simple {
+  margin-bottom: 1rem !important;
+}
+
+/* Message input container styling */
+.str-chat__message-input {
+  background: white !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 1rem !important;
 }
 
 /* Chatbot Styles */
