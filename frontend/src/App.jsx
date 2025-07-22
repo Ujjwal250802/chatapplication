@@ -1,15 +1,27 @@
 import React from 'react'
-import { Route, Routes } from 'react-router'
+import { Route, Routes, Navigate } from 'react-router'
 import HomePage from "./pages/HomePage.jsx";
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import GroupsPage from "./pages/GroupsPage.jsx";
 import GroupChatPage from "./pages/GroupChatPage.jsx";
 import GroupCallPage from "./pages/GroupCallPage.jsx";
+import Layout from "./components/Layout.jsx";
+import useAuthUser from "./hooks/useAuthUser.js";
+import PageLoader from "./components/PageLoader.jsx";
+import { useThemeStore } from "./store/useThemeStore.js";
 
 const App = () => {
+  const { authUser, isLoading } = useAuthUser();
+  const { theme } = useThemeStore();
+
+  const isAuthenticated = !!authUser;
+  const isOnboarded = authUser?.isOnboarded;
+
+  if (isLoading) return <PageLoader />;
+
   return (
-    <div className='h-screen' data-theme="coffee">
+    <div className='h-screen' data-theme={theme}>
     <Routes>
       <Route
           path="/"
