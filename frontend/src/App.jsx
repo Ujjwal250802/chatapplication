@@ -27,8 +27,8 @@ const App = () => {
 
   return (
     <div className='h-screen' data-theme={theme}>
-    <Routes>
-      <Route
+      <Routes>
+        <Route
           path="/"
           element={
             isAuthenticated && isOnboarded ? (
@@ -83,6 +83,18 @@ const App = () => {
           }
         />
         <Route
+          path="/groups"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <GroupsPage />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
+            )
+          }
+        />
+        <Route
           path="/chat/:id"
           element={
             isAuthenticated && isOnboarded ? (
@@ -98,18 +110,6 @@ const App = () => {
           path="/call/:id"
           element={
             isAuthenticated && isOnboarded ? <CallPage /> : <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
-          }
-        />
-        <Route
-          path="/groups"
-          element={
-            isAuthenticated && isOnboarded ? (
-              <Layout showSidebar={true}>
-                <GroupsPage />
-              </Layout>
-            ) : (
-              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
-            )
           }
         />
         <Route
@@ -130,9 +130,7 @@ const App = () => {
             isAuthenticated && isOnboarded ? <GroupCallPage /> : <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
           }
         />
-
-    </Routes>
-      
+      </Routes>
     </div>
   )
 }
