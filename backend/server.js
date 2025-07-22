@@ -33,6 +33,11 @@ app.use("/api/chat", chatRoutes);
 app.use("/api", chatbotRoutes);
 app.use("/api/groups", groupRoutes);
 
+// Add a test route to verify server is working
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Server is working!" });
+});
+
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
