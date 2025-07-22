@@ -101,7 +101,7 @@ const ChatPage = () => {
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col bg-gray-50">
       <Chat client={chatClient} theme="str-chat__theme-light">
         <Channel channel={channel}>
           {/* Custom Header */}
@@ -132,10 +132,11 @@ const ChatPage = () => {
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleVideoCall} 
-                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-1"
                 title="Start Video Call"
               >
-                <VideoIcon className="size-5" />
+                <VideoIcon className="size-4" />
+                <span className="text-sm font-medium">Start Call</span>
               </button>
             </div>
           </div>
@@ -143,45 +144,14 @@ const ChatPage = () => {
           {/* Chat Content */}
           <div className="flex-1 flex flex-col bg-gray-50">
             <Window>
-              <div className="flex-1 flex flex-col">
-                {/* Messages Area */}
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="size-16 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <svg className="size-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                    </div>
-                    <p className="text-gray-500 text-lg">No chats here yet...</p>
-                  </div>
-                </div>
-                
-                {/* Message List (hidden when empty) */}
-                <div className="hidden">
-                  <MessageList />
-                </div>
-              </div>
+              <MessageList />
               
-              {/* Message Input */}
+              {/* Custom Message Input */}
               <div className="bg-white border-t border-gray-200 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 relative">
-                    <input
-                      type="text"
-                      placeholder="Type your message"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600">
-                        <svg className="size-5" fill="currentColor" viewBox="0 0 20 20">
-                          <circle cx="10" cy="10" r="3" />
-                        </svg>
-                      </button>
-                      <button className="p-1 text-blue-500 hover:text-blue-600">
-                        <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                      </button>
+                    <div className="str-chat__message-input-wrapper">
+                      <MessageInput />
                     </div>
                   </div>
                   <button className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
