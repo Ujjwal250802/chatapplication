@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserGroups, getRecommendedUsers, getUserFriends, sendFriendRequest, getOutgoingFriendReqs } from "../lib/api";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { Users2Icon, MessageSquareIcon, VideoIcon, UsersIcon, UserPlusIcon } from "lucide-react";
 import FriendCard from "../components/FriendCard";
 import NoFriendsFound from "../components/NoFriendsFound";

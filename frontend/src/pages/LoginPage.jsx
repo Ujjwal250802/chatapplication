@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { EyeIcon, EyeOffIcon, LoaderIcon, MailIcon, ShipWheelIcon } from "lucide-react";
 import useLogin from "../hooks/useLogin";
 import { useThemeStore } from "../store/useThemeStore";
