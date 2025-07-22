@@ -15,12 +15,16 @@
 
 .str-chat__message-list {
   height: 100% !important;
-  background: transparent !important;
+  background: #f9fafb !important;
+  padding: 1rem !important;
 }
 
-.str-chat__message-input {
-  background: transparent !important;
-  display: none !important;
+/* Custom message input styling */
+.str-chat__message-input-wrapper {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 9999px !important;
+  padding: 0.5rem 1rem !important;
 }
 
 .str-chat__input {
@@ -28,11 +32,13 @@
   border: 1px solid #e5e7eb !important;
   color: #374151 !important;
   border-radius: 9999px !important;
+  padding: 0.75rem 1rem !important;
 }
 
 .str-chat__input:focus {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  outline: none !important;
 }
 
 .str-chat__message-simple__content {
@@ -40,6 +46,8 @@
   color: #374151 !important;
   border: 1px solid #e5e7eb !important;
   border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  max-width: 70% !important;
 }
 
 .str-chat__message-simple--me .str-chat__message-simple__content {
@@ -53,14 +61,60 @@
   display: none !important;
 }
 
-.str-chat__thread {
-  display: none !important;
-}
-
 /* Custom empty state styling */
 .str-chat__message-list-scroll {
   background: #f9fafb !important;
 }
+
+/* Message input send button styling */
+.str-chat__send-button {
+  background: #3b82f6 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 0.5rem !important;
+}
+
+.str-chat__send-button:hover {
+  background: #2563eb !important;
+}
+
+/* Message list styling */
+.str-chat__message-list-scroll {
+  padding: 1rem !important;
+}
+
+.str-chat__message-simple {
+  margin-bottom: 1rem !important;
+}
+
+/* Empty state styling */
+.str-chat__message-list--empty {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  color: #9ca3af !important;
+}
+
+.str-chat__message-list--empty::before {
+  content: "💬" !important;
+  font-size: 3rem !important;
+  margin-bottom: 1rem !important;
+  opacity: 0.5 !important;
+}
+
+.str-chat__message-list--empty::after {
+  content: "No chats here yet..." !important;
+  font-size: 1.125rem !important;
+  color: #9ca3af !important;
+}
+
 /* Chatbot Styles */
 #chat-icon {
   position: fixed;
