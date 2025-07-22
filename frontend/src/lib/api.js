@@ -63,3 +63,29 @@ export async function getStreamToken() {
   const response = await axiosInstance.get("/chat/token");
   return response.data;
 }
+
+// Group API functions
+export async function createGroup(groupData) {
+  const response = await axiosInstance.post("/groups", groupData);
+  return response.data;
+}
+
+export async function getUserGroups() {
+  const response = await axiosInstance.get("/groups");
+  return response.data;
+}
+
+export async function getGroupDetails(groupId) {
+  const response = await axiosInstance.get(`/groups/${groupId}`);
+  return response.data;
+}
+
+export async function addMemberToGroup(groupId, userId) {
+  const response = await axiosInstance.post(`/groups/${groupId}/members`, { userId });
+  return response.data;
+}
+
+export async function removeMemberFromGroup(groupId, userId) {
+  const response = await axiosInstance.delete(`/groups/${groupId}/members`, { data: { userId } });
+  return response.data;
+}
