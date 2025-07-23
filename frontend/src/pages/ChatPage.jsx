@@ -7,7 +7,6 @@ import { getStreamToken } from "../lib/api";
 import {
   Channel,
   Chat,
-  MessageInput,
   MessageList,
   Thread,
   Window,
@@ -16,7 +15,9 @@ import { StreamChat } from "stream-chat";
 import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
-import { VideoIcon, ArrowLeftIcon, CreditCardIcon, PlusIcon, SmileIcon, SendIcon } from "lucide-react";
+import CustomMessageInput from "../components/CustomMessageInput";
+import PaymentMessage from "../components/PaymentMessage";
+import { VideoIcon, ArrowLeftIcon, PhoneIcon } from "lucide-react";
 
 import "stream-chat-react/dist/css/v2/index.css";
 
@@ -29,7 +30,6 @@ const ChatPage = () => {
   const [channel, setChannel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [targetUser, setTargetUser] = useState(null);
-  const [showPayModal, setShowPayModal] = useState(false);
 
   const { authUser } = useAuthUser();
 
@@ -99,42 +99,27 @@ const ChatPage = () => {
     }
   };
 
-  const handlePayment = (amount, credentials) => {
-    if (channel && amount > 0) {
-      // Simulate Razorpay payment process
-      const paymentData = {
-        amount: amount,
-        currency: 'INR',
-        receipt: `receipt_${Date.now()}`,
-        payment_capture: 1
-      };
-
-      // Send payment message to chat
-      channel.sendMessage({
-        text: `💰 Payment of ₹${amount} sent via Razorpay`,
-        attachments: [{
-          type: 'payment',
-          title: 'Payment Sent',
-          text: `₹${amount} has been sent`,
-          color: '#00BCD4'
-        }]
-      });
-      
-      setShowPayModal(false);
-      toast.success(`Payment of ₹${amount} sent successfully!`);
+  // Custom message renderer
+  const customMessageRenderer = (message, index) => {
+    if (message.type === "payment_confirmation" || message.type === "payment_notification") {
+      return <PaymentMessage key={message.id || index} message={message} />;
     }
+    return null;
   };
 
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-green-50 to-green-100">
       <Chat client={chatClient} theme="str-chat__theme-light">
-        <Channel channel={channel}>
-          {/* Modern Header Design */}
-          <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between shadow-sm">
+        <Channel 
+          channel={channel}
+          Message={customMessageRenderer}
+        >
+          {/* Clean Header Design */}
+          <div className="bg-white/90 backdrop-blur-sm border-b border-green-200 px-4 py-3 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <Link to="/" className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+              <Link to="/" className="p-2 hover:bg-green-50 rounded-full transition-colors">
                 <ArrowLeftIcon className="size-5 text-gray-600" />
               </Link>
               {targetUser && (
@@ -144,14 +129,14 @@ const ChatPage = () => {
                       <img 
                         src={targetUser.image || targetUser.profilePic} 
                         alt={targetUser.name || targetUser.fullName}
-                        className="rounded-full" 
+                        className="rounded-full border-2 border-green-200" 
                       />
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 text-sm">{targetUser.name || targetUser.fullName}</h3>
-                    <p className="text-xs text-gray-500">2 members, 1 online</p>
+                    <p className="text-xs text-green-600">2 members, 1 online</p>
                   </div>
                 </>
               )}
@@ -159,211 +144,28 @@ const ChatPage = () => {
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleVideoCall} 
-                className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-1.5 text-sm font-medium"
+                className="p-2.5 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors shadow-lg"
                 title="Start Video Call"
               >
-                <VideoIcon className="size-4" />
-                Start Call
+                <VideoIcon className="size-5" />
               </button>
             </div>
           </div>
 
-          {/* Chat Content with Modern Design */}
-          <div className="flex-1 flex flex-col bg-white relative">
+          {/* Chat Content */}
+          <div className="flex-1 flex flex-col relative">
             <Window>
-              <MessageList />
-              
-              {/* Modern Message Input */}
-              <div className="bg-white border-t border-gray-100 p-4">
-                <div className="flex items-end gap-3">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                    <PlusIcon className="size-5" />
-                  </button>
-                  
-                  <div className="flex-1 relative bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-blue-300 transition-colors">
-                    <div className="px-4 py-3">
-                      <MessageInput />
-                    </div>
-                  </div>
-                  
-                  <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                    <SmileIcon className="size-5" />
-                  </button>
-                  
-                  <button 
-                    onClick={() => setShowPayModal(true)}
-                    className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-medium transition-colors flex items-center gap-2 text-sm"
-                  >
-                    Pay
-                  </button>
-                </div>
+              <div className="flex-1 bg-white/50 backdrop-blur-sm">
+                <MessageList />
               </div>
+              
+              {/* Custom Message Input */}
+              <CustomMessageInput channel={channel} />
             </Window>
             <Thread />
           </div>
         </Channel>
       </Chat>
-
-      {/* Razorpay Payment Modal */}
-      {showPayModal && (
-        <RazorpayPaymentModal 
-          onClose={() => setShowPayModal(false)}
-          onPay={handlePayment}
-          recipientName={targetUser?.name || targetUser?.fullName}
-        />
-      )}
-    </div>
-  );
-};
-
-// Razorpay Payment Modal Component
-const RazorpayPaymentModal = ({ onClose, onPay, recipientName }) => {
-  const [amount, setAmount] = useState('');
-  const [credentials, setCredentials] = useState({
-    email: '',
-    phone: ''
-  });
-  const [showCredentials, setShowCredentials] = useState(false);
-
-  const handleInitialSubmit = (e) => {
-    e.preventDefault();
-    const payAmount = parseFloat(amount);
-    if (payAmount > 0) {
-      setShowCredentials(true);
-    } else {
-      toast.error('Please enter a valid amount');
-    }
-  };
-
-  const handleFinalPayment = (e) => {
-    e.preventDefault();
-    if (!credentials.email || !credentials.phone) {
-      toast.error('Please fill in all credentials');
-      return;
-    }
-
-    // Simulate opening Razorpay
-    toast.success('Opening Razorpay payment gateway...');
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      onPay(parseFloat(amount), credentials);
-    }, 2000);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
-        {!showCredentials ? (
-          <>
-            <div className="text-center mb-6">
-              <div className="size-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <CreditCardIcon className="size-8 text-cyan-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">Send Payment</h3>
-              <p className="text-gray-600 mt-1">Send money to {recipientName}</p>
-            </div>
-            
-            <form onSubmit={handleInitialSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (₹)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₹</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="1"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-lg font-medium"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition-colors font-medium"
-                >
-                  Continue
-                </button>
-              </div>
-            </form>
-          </>
-        ) : (
-          <>
-            <div className="text-center mb-6">
-              <div className="size-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <img src="https://razorpay.com/favicon.png" alt="Razorpay" className="size-8" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">Razorpay Payment</h3>
-              <p className="text-gray-600 mt-1">Enter your details to proceed</p>
-              <div className="bg-gray-50 rounded-lg p-3 mt-3">
-                <p className="text-lg font-semibold text-gray-900">₹{amount}</p>
-                <p className="text-sm text-gray-600">to {recipientName}</p>
-              </div>
-            </div>
-            
-            <form onSubmit={handleFinalPayment} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={credentials.email}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="your@email.com"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={credentials.phone}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="+91 9876543210"
-                  required
-                />
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCredentials(false)}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                  <img src="https://razorpay.com/favicon.png" alt="Razorpay" className="size-4" />
-                  Pay ₹{amount}
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-      </div>
     </div>
   );
 };

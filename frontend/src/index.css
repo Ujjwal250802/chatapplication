@@ -5,18 +5,19 @@
 /* Stream Chat Custom Styles */
 .str-chat__main-panel {
   height: 100% !important;
-  background: transparent !important;
+  background: rgba(255, 255, 255, 0.5) !important;
 }
 
 .str-chat__channel {
   height: 100% !important;
-  background: transparent !important;
+  background: rgba(255, 255, 255, 0.5) !important;
 }
 
 .str-chat__message-list {
   height: 100% !important;
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.3) !important;
   padding: 1rem !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 /* Custom message input styling */
@@ -38,6 +39,7 @@
   resize: none !important;
   min-height: auto !important;
   max-height: 120px !important;
+  font-family: inherit !important;
 }
 
 .str-chat__input:focus {
@@ -51,19 +53,21 @@
   font-size: 14px !important;
 }
 .str-chat__message-simple__content {
-  background: #f3f4f6 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
   color: #374151 !important;
   border: none !important;
   border-radius: 18px !important;
   padding: 0.75rem 1rem !important;
   max-width: 70% !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .str-chat__message-simple--me .str-chat__message-simple__content {
-  background: #dcf8c6 !important;
+  background: rgba(34, 197, 94, 0.1) !important;
   color: #374151 !important;
   border: none !important;
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
 }
 
 /* Hide default Stream Chat components we're replacing */
@@ -71,9 +75,15 @@
   display: none !important;
 }
 
+/* Hide default message input */
+.str-chat__message-input {
+  display: none !important;
+}
+
 /* Custom empty state styling */
 .str-chat__message-list-scroll {
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 /* Empty state custom styling */
@@ -84,7 +94,8 @@
   justify-content: center !important;
   height: 100% !important;
   color: #6b7280 !important;
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .str-chat__message-list--empty::before {
@@ -104,15 +115,17 @@
   font-weight: 400 !important;
 }
 /* Message input send button styling */
+/* Custom thread styling */
+.str-chat__thread {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
 .str-chat__send-button {
   transition: background-color 0.2s !important;
+  display: none !important;
 }
 
-  background: #4b5563 !important;
-}
-
-  height: 0.875rem !important;
-}
 /* Message list styling */
 .str-chat__message-list-scroll {
   padding: 1rem !important;
@@ -120,13 +133,6 @@
 
 .str-chat__message-simple {
   margin-bottom: 1rem !important;
-}
-
-/* Message input container styling */
-.str-chat__message-input {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
 }
 
 /* Chatbot Styles */

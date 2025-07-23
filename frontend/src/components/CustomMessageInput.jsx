@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MessageInput } from "stream-chat-react";
 import PaymentButton from "./PaymentButton";
+import { PlusIcon, SmileIcon, SendIcon } from "lucide-react";
 import useAuthUser from "../hooks/useAuthUser";
 
 const CustomMessageInput = ({ channel }) => {
@@ -25,107 +26,73 @@ const CustomMessageInput = ({ channel }) => {
         hour12: true,
       });
 
-      // 🔹 Send a simple test message first
-      await channel
-        .sendMessage({
-          text: `✅ Paid ₹${paymentData.amount} to ${paymentData.recipientName}`,
-        })
-        .then(() => console.log("✅ Test message sent"))
-        .catch((err) => console.error("❌ Failed to send test message", err));
+      // Send payment confirmation message
+      await channel.sendMessage({
+        text: `💰 Payment Sent Successfully! ✅\n\n💵 Amount: ₹${paymentData.amount}\n👤 To: ${paymentData.recipientName}\n🏦 UPI: ${paymentData.upiId}\n🆔 Transaction ID: ${paymentData.payment_id}\n📅 Time: ${currentTime}`,
+        type: "payment_confirmation",
+        payment_details: {
+          amount: paymentData.amount,
+          recipient_name: paymentData.recipientName,
+          recipient_upi: paymentData.upiId,
+          transaction_id: paymentData.payment_id,
+          order_id: paymentData.order_id,
+          sender_name: authUser?.fullName || "Unknown",
+          timestamp: paymentData.timestamp,
+          status: "completed",
+          type: "sent",
+        },
+      });
 
-      // 🔹 Send detailed payment confirmation message
-      await channel
-        .sendMessage({
-          text: `💰 Payment Sent Successfully! ✅\n\n💵 Amount: ₹${paymentData.amount}\n👤 To: ${paymentData.recipientName}\n🏦 UPI: ${paymentData.upiId}\n🆔 Transaction ID: ${paymentData.payment_id}\n📅 Time: ${currentTime}`,
-          type: "payment_confirmation",
-          payment_details: {
-            amount: paymentData.amount,
-            recipient_name: paymentData.recipientName,
-            recipient_upi: paymentData.upiId,
-            transaction_id: paymentData.payment_id,
-            order_id: paymentData.order_id,
-            sender_name: authUser?.fullName || "Unknown",
-            timestamp: paymentData.timestamp,
-            status: "completed",
-            type: "sent",
-          },
-          attachments: [
-            {
-              type: "payment",
-              title: "💰 Payment Confirmation",
-              color: "#10B981",
-              fields: [
-                {
-                  title: "Amount",
-                  value: `₹${paymentData.amount}`,
-                  short: true,
-                },
-                {
-                  title: "Recipient",
-                  value: paymentData.recipientName,
-                  short: true,
-                },
-                {
-                  title: "UPI ID",
-                  value: paymentData.upiId,
-                  short: true,
-                },
-                {
-                  title: "Transaction ID",
-                  value: paymentData.payment_id,
-                  short: true,
-                },
-              ],
-              footer: `Sent via ChatSphere • ${currentTime}`,
-              footer_icon: "✅",
-            },
-          ],
-        })
-        .then(() => console.log("✅ Rich payment message sent"))
-        .catch((error) => {
-          console.error("❌ Failed to send rich payment message:", error);
-        });
-
-      // 🔹 Send recipient notification (delayed)
+      // Send recipient notification (delayed)
       setTimeout(() => {
-        channel
-          .sendMessage({
-            text: `🔔 Payment Received! ✅\n\n💵 ₹${paymentData.amount} from ${authUser?.fullName || "Unknown"}\n🆔 TXN: ${paymentData.payment_id}`,
-            type: "payment_notification",
-            payment_details: {
-              ...paymentData,
-              sender_name: authUser?.fullName || "Unknown",
-              type: "received",
-              status: "completed",
-              timestamp: paymentData.timestamp,
-            },
-          })
-          .then(() => console.log("✅ Recipient notified"))
-          .catch((err) =>
-            console.error("❌ Error sending recipient message", err)
-          );
+        channel.sendMessage({
+          text: `🔔 Payment Received! ✅\n\n💵 ₹${paymentData.amount} from ${authUser?.fullName || "Unknown"}\n🆔 TXN: ${paymentData.payment_id}`,
+          type: "payment_notification",
+          payment_details: {
+            ...paymentData,
+            sender_name: authUser?.fullName || "Unknown",
+            type: "received",
+            status: "completed",
+            timestamp: paymentData.timestamp,
+          },
+        });
       }, 1000);
     } catch (error) {
       console.error("❌ Error in handlePaymentSuccess:", error);
     }
   };
 
-  // 🔁 Optional: test auto-message on mount (debug only)
-  // useEffect(() => {
-  //   if (channel) {
-  //     channel.sendMessage({ text: "🧪 Hello from useEffect" });
-  //   }
-  // }, [channel]);
-
   return (
-    <div className="relative">
-      <div className="flex items-center gap-2 p-2 bg-base-200 border-t border-base-300">
-        <div className="flex-1">
-          <MessageInput focus />
+    <div className="bg-white/90 backdrop-blur-sm border-t border-gray-200 p-4">
+      <div className="flex items-center gap-3 bg-gray-50 rounded-2xl border border-gray-200 px-4 py-2">
+        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+          <PlusIcon className="size-5" />
+        </button>
+        
+        <div className="flex-1 min-h-[40px] flex items-center">
+          <MessageInput 
+            focus={false}
+            placeholder="Type your message"
+            additionalTextareaProps={{
+              style: {
+                border: 'none',
+                outline: 'none',
+                resize: 'none',
+                backgroundColor: 'transparent',
+                fontSize: '14px',
+                padding: '8px 0',
+                minHeight: '24px',
+                maxHeight: '120px'
+              }
+            }}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <PaymentButton onSuccess={handlePaymentSuccess} />
-        </div>
+        
+        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+          <SmileIcon className="size-5" />
+        </button>
+        
+        <PaymentButton onSuccess={handlePaymentSuccess} />
       </div>
     </div>
   );

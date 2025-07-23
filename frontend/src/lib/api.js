@@ -89,3 +89,14 @@ export async function removeMemberFromGroup(groupId, userId) {
   const response = await axiosInstance.delete(`/groups/${groupId}/members`, { data: { userId } });
   return response.data;
 }
+
+// Payment API functions
+export async function createPaymentOrder(amount) {
+  const response = await axiosInstance.post("/payment/create-order", { amount });
+  return response.data;
+}
+
+export async function verifyPayment(paymentData) {
+  const response = await axiosInstance.post("/payment/verify", paymentData);
+  return response.data;
+}
