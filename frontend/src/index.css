@@ -64,10 +64,10 @@
 }
 
 .str-chat__message-simple--me .str-chat__message-simple__content {
-  background: rgba(34, 197, 94, 0.1) !important;
+  background: rgba(16, 185, 129, 0.15) !important;
   color: #374151 !important;
   border: none !important;
-  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
 }
 
 /* Hide default Stream Chat components we're replacing */
@@ -78,6 +78,14 @@
 /* Hide default message input */
 .str-chat__message-input {
   display: none !important;
+}
+
+/* Custom message input container */
+.str-chat__message-input-wrapper {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 1rem !important;
 }
 
 /* Custom empty state styling */

@@ -100,3 +100,19 @@ export async function verifyPayment(paymentData) {
   const response = await axiosInstance.post("/payment/verify", paymentData);
   return response.data;
 }
+
+export async function getPaymentDetails(paymentId) {
+  const response = await axiosInstance.get(`/payment/details/${paymentId}`);
+  return response.data;
+}
+
+// Payment API functions
+export async function createPaymentOrder(amount) {
+  const response = await axiosInstance.post("/payment/create-order", { amount });
+  return response.data;
+}
+
+export async function verifyPayment(paymentData) {
+  const response = await axiosInstance.post("/payment/verify", paymentData);
+  return response.data;
+}
