@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { MessageInput } from "stream-chat-react";
 import PaymentButton from "./PaymentButton";
-import { PlusIcon, SmileIcon, SendIcon } from "lucide-react";
+import { PlusIcon, SmileIcon } from "lucide-react";
 import useAuthUser from "../hooks/useAuthUser";
 
 const CustomMessageInput = ({ channel }) => {

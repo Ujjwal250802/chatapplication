@@ -139,7 +139,7 @@ const PaymentButton = ({ onSuccess, disabled = false }) => {
       <button
         onClick={handlePaymentClick}
         disabled={disabled}
-        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-medium transition-all duration-200 flex items-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:scale-105"
+        className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-medium transition-all duration-200 flex items-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:scale-105"
         title="Send Payment"
       >
         <CreditCard className="size-4" />
