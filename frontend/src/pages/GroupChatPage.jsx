@@ -8,6 +8,7 @@ import {
   Channel,
   Chat,
   MessageList,
+  MessageInput,
   Thread,
   Window,
 } from "stream-chat-react";
@@ -15,9 +16,9 @@ import { StreamChat } from "stream-chat";
 import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
-import CustomMessageInput from "../components/CustomMessageInput";
+import PaymentButton from "../components/PaymentButton";
 import PaymentMessage from "../components/PaymentMessage";
-import { VideoIcon, ArrowLeftIcon, Users2Icon } from "lucide-react";
+import { VideoIcon, ArrowLeftIcon, Users2Icon, PlusIcon, SmileIcon } from "lucide-react";
 
 import "stream-chat-react/dist/css/v2/index.css";
 
@@ -32,26 +33,41 @@ const GroupChatPage = () => {
 
   const { authUser } = useAuthUser();
 
-  const { data: tokenData } = useQuery({
+  const { data: tokenData, isLoading: tokenLoading } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
     enabled: !!authUser,
+    retry: 3,
   });
 
-  const { data: groupDetails } = useQuery({
+  const { data: groupDetails, isLoading: groupLoading } = useQuery({
     queryKey: ["groupDetails", groupId],
     queryFn: () => getGroupDetails(groupId),
     enabled: !!groupId,
+    retry: 3,
   });
 
   useEffect(() => {
     const initChat = async () => {
-      if (!tokenData?.token || !authUser || !groupDetails) return;
+      if (!tokenData?.token || !authUser || !groupDetails || !STREAM_API_KEY) {
+        console.log("Missing requirements:", { 
+          token: !!tokenData?.token, 
+          authUser: !!authUser, 
+          groupDetails: !!groupDetails,
+          apiKey: !!STREAM_API_KEY 
+        });
+        return;
+      }
 
       try {
         console.log("Initializing group chat client...");
 
         const client = StreamChat.getInstance(STREAM_API_KEY);
+
+        // Disconnect any existing connection
+        if (client.user) {
+          await client.disconnectUser();
+        }
 
         await client.connectUser(
           {
@@ -62,6 +78,8 @@ const GroupChatPage = () => {
           tokenData.token
         );
 
+        console.log("User connected successfully");
+
         const memberIds = groupDetails.members.map(member => member._id);
 
         const currChannel = client.channel("messaging", groupDetails.streamChannelId, {
@@ -71,6 +89,7 @@ const GroupChatPage = () => {
         });
 
         await currChannel.watch();
+        console.log("Group channel watched successfully");
 
         setChatClient(client);
         setChannel(currChannel);
@@ -83,7 +102,14 @@ const GroupChatPage = () => {
     };
 
     initChat();
-  }, [tokenData, authUser, groupDetails]);
+
+    // Cleanup function
+    return () => {
+      if (chatClient) {
+        chatClient.disconnectUser();
+      }
+    };
+  }, [tokenData, authUser, groupDetails, STREAM_API_KEY]);
 
   const handleVideoCall = () => {
     if (channel && groupDetails) {
@@ -93,29 +119,76 @@ const GroupChatPage = () => {
         text: `🎥 Group video call started! Join here: ${callUrl}`,
       });
 
-      // Open the call in a new window/tab
       window.open(callUrl, '_blank');
       toast.success("Video call link sent to group!");
     }
   };
 
+  const handlePaymentSuccess = async (paymentData) => {
+    try {
+      console.log("✅ Group Payment Success Callback Triggered", paymentData);
+
+      if (!channel || !authUser) {
+        console.error("❌ Channel or authUser not available", { channel, authUser });
+        return;
+      }
+
+      const currentTime = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      // Send payment confirmation message to group
+      await channel.sendMessage({
+        text: `💰 Payment Sent in Group! ✅\n\n💵 Amount: ₹${paymentData.amount}\n👤 To: ${paymentData.recipientName}\n🏦 UPI: ${paymentData.upiId}\n🆔 Transaction ID: ${paymentData.payment_id}\n📅 Time: ${currentTime}`,
+        type: "payment_confirmation",
+        payment_details: {
+          amount: paymentData.amount,
+          recipient_name: paymentData.recipientName,
+          recipient_upi: paymentData.upiId,
+          transaction_id: paymentData.payment_id,
+          order_id: paymentData.order_id,
+          sender_name: authUser?.fullName || "Unknown",
+          timestamp: paymentData.timestamp,
+          status: "completed",
+          type: "sent",
+        },
+      });
+    } catch (error) {
+      console.error("❌ Error in handlePaymentSuccess:", error);
+    }
+  };
+
   // Custom message renderer
-  const customMessageRenderer = (message, index) => {
-    if (message.type === "payment_confirmation" || message.type === "payment_notification") {
-      return <PaymentMessage key={message.id || index} message={message} />;
+  const Message = (props) => {
+    if (props.message.type === "payment_confirmation" || props.message.type === "payment_notification") {
+      return <PaymentMessage message={props.message} />;
     }
     return null;
   };
 
-  if (loading || !chatClient || !channel || !groupDetails) return <ChatLoader />;
+  if (loading || tokenLoading || groupLoading) return <ChatLoader />;
+
+  if (!chatClient || !channel || !groupDetails) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="loading loading-spinner loading-lg mb-4"></div>
+          <p>Failed to connect to group chat. Please refresh the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 to-blue-100">
       <Chat client={chatClient} theme="str-chat__theme-light">
-        <Channel 
-          channel={channel}
-          Message={customMessageRenderer}
-        >
+        <Channel channel={channel} Message={Message}>
           {/* Clean Header */}
           <div className="bg-white/90 backdrop-blur-sm border-b border-blue-200 px-4 py-3 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
@@ -152,7 +225,38 @@ const GroupChatPage = () => {
               </div>
               
               {/* Custom Message Input */}
-              <CustomMessageInput channel={channel} />
+              <div className="bg-white/90 backdrop-blur-sm border-t border-gray-200 p-4">
+                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl border border-gray-200 px-4 py-2">
+                  <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                    <PlusIcon className="size-5" />
+                  </button>
+                  
+                  <div className="flex-1 min-h-[40px] flex items-center">
+                    <MessageInput 
+                      focus={false}
+                      placeholder="Type your message"
+                      additionalTextareaProps={{
+                        style: {
+                          border: 'none',
+                          outline: 'none',
+                          resize: 'none',
+                          backgroundColor: 'transparent',
+                          fontSize: '14px',
+                          padding: '8px 0',
+                          minHeight: '24px',
+                          maxHeight: '120px'
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                    <SmileIcon className="size-5" />
+                  </button>
+                  
+                  <PaymentButton onSuccess={handlePaymentSuccess} />
+                </div>
+              </div>
             </Window>
             <Thread />
           </div>

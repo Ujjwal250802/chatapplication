@@ -8,6 +8,7 @@ import {
   Channel,
   Chat,
   MessageList,
+  MessageInput,
   Thread,
   Window,
 } from "stream-chat-react";
@@ -15,9 +16,9 @@ import { StreamChat } from "stream-chat";
 import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
-import CustomMessageInput from "../components/CustomMessageInput";
+import PaymentButton from "../components/PaymentButton";
 import PaymentMessage from "../components/PaymentMessage";
-import { VideoIcon, ArrowLeftIcon, PhoneIcon } from "lucide-react";
+import { VideoIcon, ArrowLeftIcon, PlusIcon, SmileIcon } from "lucide-react";
 
 import "stream-chat-react/dist/css/v2/index.css";
 
@@ -33,20 +34,33 @@ const ChatPage = () => {
 
   const { authUser } = useAuthUser();
 
-  const { data: tokenData } = useQuery({
+  const { data: tokenData, isLoading: tokenLoading } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
     enabled: !!authUser,
+    retry: 3,
   });
 
   useEffect(() => {
     const initChat = async () => {
-      if (!tokenData?.token || !authUser) return;
+      if (!tokenData?.token || !authUser || !STREAM_API_KEY) {
+        console.log("Missing requirements:", { 
+          token: !!tokenData?.token, 
+          authUser: !!authUser, 
+          apiKey: !!STREAM_API_KEY 
+        });
+        return;
+      }
 
       try {
         console.log("Initializing stream chat client...");
 
         const client = StreamChat.getInstance(STREAM_API_KEY);
+
+        // Disconnect any existing connection
+        if (client.user) {
+          await client.disconnectUser();
+        }
 
         await client.connectUser(
           {
@@ -57,6 +71,8 @@ const ChatPage = () => {
           tokenData.token
         );
 
+        console.log("User connected successfully");
+
         const channelId = [authUser._id, targetUserId].sort().join("-");
 
         const currChannel = client.channel("messaging", channelId, {
@@ -64,6 +80,7 @@ const ChatPage = () => {
         });
 
         await currChannel.watch();
+        console.log("Channel watched successfully");
 
         // Get target user info from channel members
         const members = Object.values(currChannel.state.members);
@@ -83,7 +100,14 @@ const ChatPage = () => {
     };
 
     initChat();
-  }, [tokenData, authUser, targetUserId]);
+
+    // Cleanup function
+    return () => {
+      if (chatClient) {
+        chatClient.disconnectUser();
+      }
+    };
+  }, [tokenData, authUser, targetUserId, STREAM_API_KEY]);
 
   const handleVideoCall = () => {
     if (channel) {
@@ -93,29 +117,91 @@ const ChatPage = () => {
         text: `🎥 I've started a video call. Join me here: ${callUrl}`,
       });
 
-      // Open the call in a new window/tab
       window.open(callUrl, '_blank');
       toast.success("Video call started!");
     }
   };
 
+  const handlePaymentSuccess = async (paymentData) => {
+    try {
+      console.log("✅ Payment Success Callback Triggered", paymentData);
+
+      if (!channel || !authUser) {
+        console.error("❌ Channel or authUser not available", { channel, authUser });
+        return;
+      }
+
+      const currentTime = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      // Send payment confirmation message
+      await channel.sendMessage({
+        text: `💰 Payment Sent Successfully! ✅\n\n💵 Amount: ₹${paymentData.amount}\n👤 To: ${paymentData.recipientName}\n🏦 UPI: ${paymentData.upiId}\n🆔 Transaction ID: ${paymentData.payment_id}\n📅 Time: ${currentTime}`,
+        type: "payment_confirmation",
+        payment_details: {
+          amount: paymentData.amount,
+          recipient_name: paymentData.recipientName,
+          recipient_upi: paymentData.upiId,
+          transaction_id: paymentData.payment_id,
+          order_id: paymentData.order_id,
+          sender_name: authUser?.fullName || "Unknown",
+          timestamp: paymentData.timestamp,
+          status: "completed",
+          type: "sent",
+        },
+      });
+
+      // Send recipient notification (delayed)
+      setTimeout(() => {
+        channel.sendMessage({
+          text: `🔔 Payment Received! ✅\n\n💵 ₹${paymentData.amount} from ${authUser?.fullName || "Unknown"}\n🆔 TXN: ${paymentData.payment_id}`,
+          type: "payment_notification",
+          payment_details: {
+            ...paymentData,
+            sender_name: authUser?.fullName || "Unknown",
+            type: "received",
+            status: "completed",
+            timestamp: paymentData.timestamp,
+          },
+        });
+      }, 1000);
+    } catch (error) {
+      console.error("❌ Error in handlePaymentSuccess:", error);
+    }
+  };
+
   // Custom message renderer
-  const customMessageRenderer = (message, index) => {
-    if (message.type === "payment_confirmation" || message.type === "payment_notification") {
-      return <PaymentMessage key={message.id || index} message={message} />;
+  const Message = (props) => {
+    if (props.message.type === "payment_confirmation" || props.message.type === "payment_notification") {
+      return <PaymentMessage message={props.message} />;
     }
     return null;
   };
 
-  if (loading || !chatClient || !channel) return <ChatLoader />;
+  if (loading || tokenLoading) return <ChatLoader />;
+
+  if (!chatClient || !channel) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="loading loading-spinner loading-lg mb-4"></div>
+          <p>Failed to connect to chat. Please refresh the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-green-50 to-green-100">
       <Chat client={chatClient} theme="str-chat__theme-light">
-        <Channel 
-          channel={channel}
-          Message={customMessageRenderer}
-        >
+        <Channel channel={channel} Message={Message}>
           {/* Clean Header Design */}
           <div className="bg-white/90 backdrop-blur-sm border-b border-green-200 px-4 py-3 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
@@ -160,7 +246,38 @@ const ChatPage = () => {
               </div>
               
               {/* Custom Message Input */}
-              <CustomMessageInput channel={channel} />
+              <div className="bg-white/90 backdrop-blur-sm border-t border-gray-200 p-4">
+                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl border border-gray-200 px-4 py-2">
+                  <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                    <PlusIcon className="size-5" />
+                  </button>
+                  
+                  <div className="flex-1 min-h-[40px] flex items-center">
+                    <MessageInput 
+                      focus={false}
+                      placeholder="Type your message"
+                      additionalTextareaProps={{
+                        style: {
+                          border: 'none',
+                          outline: 'none',
+                          resize: 'none',
+                          backgroundColor: 'transparent',
+                          fontSize: '14px',
+                          padding: '8px 0',
+                          minHeight: '24px',
+                          maxHeight: '120px'
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                    <SmileIcon className="size-5" />
+                  </button>
+                  
+                  <PaymentButton onSuccess={handlePaymentSuccess} />
+                </div>
+              </div>
             </Window>
             <Thread />
           </div>
